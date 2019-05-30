@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>权限管理</title>
+    <link rel="stylesheet" href="css/layui.css">
+    <style>
+
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo" style="width: 300px">打车软件客服监管及满意度评价分析平台</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="" class="layui-nav-img" id="head">
+                    <span th:text="${session.userId}" style="display: none;" id="content"></span>
+                    <span th:text="${session.username}"></span>(<span th:text="${session.role}"></span>)
+                </a>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item"><a th:href="@{/adminIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;管理员首页</a></li>
+                <li class="layui-nav-item layui-this"><a th:href="@{/permission}"><i class="layui-icon">&#xe66f;</i>&nbsp;&nbsp;权限管理</a></li>
+                <li class="layui-nav-item"><a th:href="@{/satisfaction}"><i class="layui-icon">&#x1005;</i>&nbsp;&nbsp;满意度评价管理</a></li>
+                <li class="layui-nav-item"><a th:href="@{/test}"><i class="layui-icon">&#xe6fc;</i>&nbsp;&nbsp;客服监管</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/adminInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">权限管理</div>
+        <button class="layui-btn" onclick="addUser()" style="left: 20px;position: relative">
+            <i class="layui-icon">&#xe608;</i> 添加
+        </button>
+        <table id="demo" lay-filter="demo"></table>
+        <script id="barDemo" type="text/html">
+            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openModak()"><i class="layui-icon">&#xe642;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openDelete()"><i class="layui-icon">&#xe640;</i></a>
+        </script>
+
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        © layui.com - 底部固定区域
+    </div>
+</div>
+
+<div id="edit" style="display: none;">
+    <form class="layui-form" th:action="@{/updateUser}" method="post">
+        <div class="layui-form-item">
+            <label class="layui-form-label">id</label>
+            <div class="layui-input-inline">
+                <input id="id" readonly name="id">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-inline">
+                <input id="username" readonly name="username" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">邮箱</label>
+            <div class="layui-input-inline">
+                <input id="email" readonly name="email" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">联系方式</label>
+            <div class="layui-input-inline">
+                <input id="tel" readonly name="tel" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">角色</label>
+            <div class="layui-input-inline">
+                <select id="role" name="role" lay-verify="required">
+                    <option value="客服">客服</option>
+                    <option value="系统管理员">系统管理员</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" type="submit" lay-filter="formDemo">确认</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<div id="addUser" style="display: none;">
+    <form class="layui-form" th:action="@{/addUser}" method="post">
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-block">
+                <input id="addUsername" name="username" onblur="checkUsername(this.value)" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码</label>
+            <div class="layui-input-block">
+                <input id="addPassword" name="password" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">邮箱</label>
+            <div class="layui-input-block">
+                <input id="addEmail" name="email" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">联系方式</label>
+            <div class="layui-input-block">
+                <input id="addTel" name="tel" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">角色</label>
+            <div class="layui-input-block">
+                <select id="addRole" name="role" lay-verify="required">
+                    <option value="客服">客服</option>
+                    <option value="系统管理员">系统管理员</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" type="submit" lay-filter="formDemo">确认</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<script src="layui.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+    var arr=location.search.slice(1).split("=");
+    //JavaScript代码区域
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+
+    layui.use('table', function() {
+        var table = layui.table;
+        var $ = layui.jquery;
+
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            , height: 500
+            , width: 910
+            , url: 'http://localhost:8091/findUser' //数据接口
+            , page: true //开启分页
+            , cols: [
+                [
+                    {field: 'id', title: 'ID', width: 80,style:'height:80px', sort: true}
+                    , {field: 'username', title: '用户名', width: 120}
+                    , {field: 'email', title: '邮箱', width: 177}
+                    , {field: 'tel', title: '联系方式', width: 177}
+                    , {field: 'role', title: '角色', width: 177}
+                    , {fixed: 'right', width: 177, align: 'center',style:'height:80px', toolbar: '#barDemo'}
+                ]
+            ]
+        });
+    });
+
+    function openModak(){
+        layui.use(['layer','table'], function() {
+            var table = layui.table;
+            var layer = layui.layer;
+            var $ =layui.$;
+
+            table.on('row(demo)', function (obj) {
+                var data = obj.data;
+                console.log(data);
+                $("#id").val(data.id);
+                $("#id").attr("value", data.id);
+                $("#username").val(data.username);
+                $("#username").attr("value", data.username);
+                $("#password").val(data.password);
+                $("#password").attr("value", data.password);
+                $("#email").val(data.email);
+                $("#email").attr("value", data.email);
+                $("#tel").val(data.tel);
+                $("#tel").attr("value", data.tel);
+                $("#role").val(data.role);
+                $("#role").attr("value", data.role);
+            })
+            layer.open({
+                type:1,//类型
+                area:['500px','400px'],//定义宽和高
+                title:'修改角色',//题目
+                shadeClose:false,//点击遮罩层关闭
+                content: $('#edit')//打开的内容
+            });
+        })
+    }
+
+    function addUser(){
+        layui.use('layer', function() {
+            var layer = layui.layer;
+            var $ =layui.$;
+
+            layer.open({
+                type:1,//类型
+                area:['500px','400px'],//定义宽和高
+                title:'新增角色',//题目
+                shadeClose:false,//点击遮罩层关闭
+                content: $('#addUser')//打开的内容
+            });
+        })
+    }
+
+    function checkUsername(username) {
+        var addUserNameInput = document.getElementById("addUsername")
+        var u = username
+        console.log("u is ", u)
+        axios.get('http://localhost:8091/checkUsername', {
+            params: {
+                'username': u
+            }
+        })
+            .then(function (response) {
+                console.log(response);
+                if (response.data == '200') {
+                    addUserNameInput.classList.remove("error")
+                } else {
+                    addUserNameInput.placeholder = "名称重复，请重新输入"
+                    addUserNameInput.value = ""
+                    addUserNameInput.classList.add("error")
+                }
+            })
+            .catch(function (error) {
+
+                console.log(error);
+            });
+    }
+
+    function openDelete(){
+        layui.use(['layer','table'], function(){
+            var layer = layui.layer;
+            var table =layui.table;
+            var $ = layui.jquery;
+            table.on('row(demo)', function (obj) {
+                var data = obj.data;
+                console.log(data);
+                var id = data.id;
+                layer.confirm("确认要删除吗，删除后不能恢复", { title: "删除确认" }, function (index) {
+                    axios.get('http://localhost:8091/deleteUser', {
+                        params: {
+                            'userId': id
+                        }
+                    }).then(function (response) {
+                        setTimeout(function(){
+                            //刷新
+                            location.reload();
+                        },1000);
+                    })
+                });
+            })
+        })
+    }
+
+    var cont=document.getElementById("content");
+    axios.get('http://localhost:8091/findUserById', {
+        params: {
+            'id': cont.innerText
+        }
+    })
+        .then(function (response) {
+            console.log(response);
+            var data = response.data;
+            document.getElementById('head').src = data.path;
+        })
+        .catch(function (error) {
+
+            console.log(error);
+        });
+</script>
+</body>
+</html>

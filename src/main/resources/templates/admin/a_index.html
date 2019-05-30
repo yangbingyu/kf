@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>系统管理员首页</title>
+    <link rel="stylesheet" href="css/layui.css">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo" style="width: 300px">打车软件客服监管及满意度评价分析平台</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="" class="layui-nav-img" id="head">
+                    <span th:text="${session.userId}" style="display: none;" id="content"></span>
+                    <span th:text="${session.username}"></span>(<span th:text="${session.role}"></span>)
+                </a>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item layui-this"><a th:href="@{/adminIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;管理员首页</a></li>
+                <li class="layui-nav-item"><a th:href="@{/permission}"><i class="layui-icon">&#xe66f;</i>&nbsp;&nbsp;权限管理</a></li>
+                <li class="layui-nav-item"><a th:href="@{/satisfaction}"><i class="layui-icon">&#x1005;</i>&nbsp;&nbsp;满意度评价管理</a></li>
+                <li class="layui-nav-item"><a th:href="@{/test}"><i class="layui-icon">&#xe6fc;</i>&nbsp;&nbsp;客服监管</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/adminInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">系统管理员首页</div>
+
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        © layui.com - 底部固定区域
+    </div>
+</div>
+
+<script src="layui.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+    var arr=location.search.slice(1).split("=");
+    //JavaScript代码区域
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+
+    var cont=document.getElementById("content");
+    axios.get('http://localhost:8091/findUserById', {
+        params: {
+            'id': cont.innerText
+        }
+    })
+        .then(function (response) {
+            console.log(response);
+            var data = response.data;
+            document.getElementById('head').src = data.path;
+        })
+        .catch(function (error) {
+
+            console.log(error);
+        });
+</script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>打车</title>
+    <link rel="stylesheet" href="css/layui.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo" style="width: 300px">打车软件客服监管及满意度评价分析平台</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="" class="layui-nav-img" id="head">
+                    <span th:text="${session.userId}" style="display: none;" id="content"></span>
+                    <span th:text="${session.username}"></span>(<span th:text="${session.role}"></span>)
+                </a>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item"><a th:href="@{/customerIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;用户首页</a></li>
+                <li class="layui-nav-item layui-this"><a th:href="@{/takeTaxi}"><i class="fa fa-car"></i>&nbsp;&nbsp;打车</a></li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;"><i class="layui-icon">&#xe63c;</i>&nbsp;&nbsp;订单</a>
+                    <dl class="layui-nav-child">
+                        <dd><a th:href="@{'/completeOrders?userId='+${session.userId}}"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;已完成订单</a></dd>
+                        <dd><a th:href="@{'/receivedOrders?userId='+${session.userId}}"><i class="fa fa-file-text-o"></i>&nbsp;&nbsp;已接订单</a></dd>
+                        <dd><a th:href="@{'/openOrders?userId='+${session.userId}}"><i class="fa fa-file-o"></i>&nbsp;&nbsp;未接订单</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item"><a th:href="@{'/toTest?username='+${session.username}}"><i class="layui-icon">&#xe606;</i>&nbsp;&nbsp;联系客服</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/customerInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">填写打车信息</div>
+        <div style="margin: 0 auto;width: 40%;border: solid 1px #000000">
+            <div style="width: 50%;height: 30px;left: 50px;position: relative">
+                <span>您当前所在城市：<span th:text="${session.city}"></span></span>
+            </div>
+            <form class="layui-form" action="">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">起点</label>
+                    <div class="layui-input-inline">
+                        <input id="origin" placeholder="您现在在哪里？" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">终点</label>
+                    <div class="layui-input-inline">
+                        <input id="destination" placeholder="您想去哪里？" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">预约时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="time">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" onclick="openModak()">预约</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+                <div id="allmap" style="display: none"></div>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        © layui.com - 底部固定区域
+    </div>
+</div>
+
+<div id="confirm" style="display: none;">
+    <form class="layui-form" th:action="@{/saveOrders}" method="post">
+        <div class="layui-form-item" style="display: none">
+            <label class="layui-form-label">客户id</label>
+            <div class="layui-input-block">
+                <input id="customerId" readonly name="customerId" th:value="${session.userId}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">起点</label>
+            <div class="layui-input-block">
+                <input id="originConfirm" readonly name="origin">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">终点</label>
+            <div class="layui-input-block">
+                <input id="destinationConfirm" readonly name="destination">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">距离(km)</label>
+            <div class="layui-input-block">
+                <input id="distance" readonly name="distance">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">价格(元)</label>
+            <div class="layui-input-block">
+                <input id="price" readonly name="price">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">预约时间</label>
+            <div class="layui-input-block">
+                <input id="timeConfirm" readonly name="date">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" type="submit" lay-filter="formDemo">确定预约</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="layui.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=7hzzSmngjpnlXqTzanDcKzGFgwYgUBaL"></script>
+<script src="js/jquery.min.js"></script>
+<script>
+
+    //JavaScript代码区域
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+
+    function openModak(){
+        var ori = document.getElementById("origin").value;
+        var destination = document.getElementById("destination").value;
+        var time = document.getElementById("time").value;
+        // console.log(ori,destination);
+        layui.use('layer', function() {
+            var layer = layui.layer;
+            var $ =layui.$;
+            layer.open({
+                type:1,//类型
+                area:['500px','400px'],//定义宽和高
+                title:'确定预约',//题目
+                shadeClose:false,//点击遮罩层关闭
+                content: $('#confirm')//打开的内容
+            });
+        })
+
+        $("#originConfirm").attr("value",ori);
+        $("#destinationConfirm").attr("value",destination);
+        $("#timeConfirm").attr("value",time);
+
+        var fromPoint = ori;
+        var toPoint = destination;
+        console.log(fromPoint,toPoint);
+        var map = new BMap.Map("allmap");
+        axios.get('http://localhost:8091/getLatitude', {
+                params: {
+                    fromPoint: fromPoint,
+                    toPoint: toPoint
+                }
+            }).then(function (response) {
+                var data = response.data;
+                var x = data[0].split(",");
+                var y = data[1].split(",");
+                var pointA = new BMap.Point(x[0],x[1]); // 创建点坐标A
+                var pointB = new BMap.Point(y[0],y[1]); // 创建点坐标B
+                var distinct = (map.getDistance(pointA,pointB)/1000).toFixed(2);
+                var price = (15+distinct*2.7).toFixed(2);
+                // console.log(distinct);
+
+                $("#distance").attr("value",distinct);
+                $("#price").attr("value",price);
+            });
+
+
+    }
+
+    layui.use('laydate', function(){
+        var laydate = layui.laydate;
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#time' //指定元素
+            ,type: 'datetime'
+        });
+    });
+
+    var cont=document.getElementById("content");
+    axios.get('http://localhost:8091/findUserById', {
+        params: {
+            'id': cont.innerText
+        }
+    })
+        .then(function (response) {
+            console.log(response);
+            var data = response.data;
+            document.getElementById('head').src = data.path;
+        })
+        .catch(function (error) {
+
+            console.log(error);
+        });
+
+
+</script>
+</body>
+</html>

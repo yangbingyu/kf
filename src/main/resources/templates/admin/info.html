@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>用户首页</title>
+    <link rel="stylesheet" href="css/layui.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo" style="width: 300px">打车软件客服监管及满意度评价分析平台</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="" class="layui-nav-img" id="head">
+                    <span th:text="${session.username}"></span>(<span th:text="${session.role}"></span>)
+                </a>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item"><a th:href="@{/adminIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;管理员首页</a></li>
+                <li class="layui-nav-item"><a th:href="@{/permission}"><i class="layui-icon">&#xe66f;</i>&nbsp;&nbsp;权限管理</a></li>
+                <li class="layui-nav-item"><a th:href="@{/satisfaction}"><i class="layui-icon">&#x1005;</i>&nbsp;&nbsp;满意度评价管理</a></li>
+                <li class="layui-nav-item"><a th:href="@{/test}"><i class="layui-icon">&#xe6fc;</i>&nbsp;&nbsp;客服监管</a></li>
+                <li class="layui-nav-item layui-this"><a th:href="@{'/adminInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">个人设置</div>
+        <div>
+            <form class="layui-form" action="" method="post">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">头像</label>
+                    <div class="layui-input-inline">
+                        <div style="width: 150px;height: 120px;border-radius: 50%;margin: 0px auto">
+                            <img id="img" src="" style="width: 100px;height: 100px;border-radius: 50%;"/>
+                        </div>
+                        <div>
+                            <span><a class="layui-btn layui-btn-xs" onclick="openModak()">更改头像</a><p id="demoText"></p></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户名</label>
+                    <div class="layui-input-inline">
+                        <input id="username" readonly name="username" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">邮箱</label>
+                    <div class="layui-input-inline">
+                        <input id="email" name="email" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">联系方式</label>
+                    <div class="layui-input-inline">
+                        <input id="tel" name="tel" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" type="submit" lay-filter="formDemo" onclick="saveInfo()">保存</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        © layui.com - 底部固定区域
+    </div>
+</div>
+<div  id="image" style="display: none;">
+    <div class="layui-upload-drag">
+        <i class="layui-icon"></i>
+        <p>点击上传，或将文件拖拽到此处</p>
+    </div>
+</div>
+
+<script src="layui.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="js/jquery.min.js"></script>
+<script>
+
+    //JavaScript代码区域
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+
+    var arr=location.search.slice(1).split("=");
+
+    axios.get('http://localhost:8091/findUserById', {
+        params: {
+            'id': arr[1]
+        }
+    })
+        .then(function (response) {
+            console.log(response);
+            var data = response.data;
+            $("#username").val(data.username);
+            $("#username").attr("value", data.username);
+            $("#tel").val(data.tel);
+            $("#tel").attr("value", data.tel);
+            $("#email").val(data.email);
+            $("#email").attr("value", data.email);
+            document.getElementById('img').src = data.path;
+            document.getElementById('head').src = data.path;
+        })
+        .catch(function (error) {
+
+            console.log(error);
+        });
+
+    function openModak(){
+        layui.use(['layer','upload'], function() {
+            var layer = layui.layer;
+            var $ =layui.$;
+            var upload = layui.upload;
+
+            var index = layer.open({
+                type:1,//类型
+                area:['500px','400px'],//定义宽和高
+                title:'修改头像',//题目
+                shadeClose:false,//点击遮罩层关闭
+                content: $('#image')//打开的内容
+            });
+
+            var uploadInst = upload.render({
+                elem: '#image'
+                , url: 'http://localhost:8091/upload/'+arr[1]
+                , before: function (obj) {
+                    //预读本地文件示例，不支持ie8
+                    obj.preview(function (index, file, result) {
+                        $('#img').attr('src', result); //图片链接（base64）
+                    });
+                }
+                , done: function (res) {
+                    console.log("---------------"+res);
+                    //如果上传失败
+                    if (res.code > 0) {
+                        return layer.msg('上传失败');
+                    }
+                    //上传成功
+                    //打印后台传回的地址: 把地址放入一个隐藏的input中, 和表单一起提交到后台, 此处略..
+                    /*   console.log(res.data.src);*/
+                    layer.close(index);
+                    var demoText = $('#demoText');
+                    demoText.html('<span style="color: #8f8f8f;">上传成功!!!</span>');
+                }
+                , error: function () {
+                    //演示失败状态，并实现重传
+                    var demoText = $('#demoText');
+                    demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-mini demo-reload">重试</a>');
+                    demoText.find('.demo-reload').on('click', function () {
+                        uploadInst.upload();
+                    });
+                }
+            });
+        })
+    }
+
+    function saveInfo() {
+        var tel = document.getElementById('tel').value;
+        var email = document.getElementById('email').value;
+        axios.get('http://localhost:8091/updateInfo', {
+            params: {
+                'id': arr[1],
+                'tel': tel,
+                'email': email
+            }
+        })
+            .then(function (response) {
+                setTimeout(function(){
+                    //刷新
+                    location.reload();
+                },1000);
+            })
+
+    }
+</script>
+</body>
+</html>

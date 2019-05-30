@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>订单</title>
+    <link rel="stylesheet" href="css/layui.css">
+    <link rel="stylesheet" href="css/metisMenu.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+    <style>
+        .layui-form-label {
+            left: 110px;
+            width: 100px;
+            text-align: center;
+        }
+        .layui-input-block{
+            left: 110px;
+        }
+
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo" style="width: 300px">打车软件客服监管及满意度评价分析平台</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="" class="layui-nav-img" id="head">
+                    <span th:text="${session.userId}" style="display: none;" id="content"></span>
+                    <span th:text="${session.username}"></span>(<span th:text="${session.role}"></span>)
+                </a>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item"><a th:href="@{/customerIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;用户首页</a></li>
+                <li class="layui-nav-item"><a th:href="@{/takeTaxi}"><i class="fa fa-car"></i>&nbsp;&nbsp;打车</a></li>
+                <li class="layui-nav-item layui-nav-itemed">
+                    <a href="javascript:;"><i class="layui-icon">&#xe63c;</i>&nbsp;&nbsp;订单</a>
+                    <dl class="layui-nav-child">
+                        <dd><a th:href="@{'/completeOrders?userId='+${session.userId}}"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;已完成订单</a></dd>
+                        <dd class="layui-this"><a th:href="@{'/receivedOrders?userId='+${session.userId}}"><i class="fa fa-file-text-o"></i>&nbsp;&nbsp;已接订单</a></dd>
+                        <dd><a th:href="@{'/openOrders?userId='+${session.userId}}"><i class="fa fa-file-o"></i>&nbsp;&nbsp;未接订单</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item"><a th:href="@{'/toTest?username='+${session.username}}"><i class="layui-icon">&#xe606;</i>&nbsp;&nbsp;联系客服</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/customerInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">已接订单详情</div>
+        <table id="demo" lay-filter="demo"></table>
+        <script id="barDemo" type="text/html">
+            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openModak()">驳回此单</a>
+        </script>
+
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        © layui.com - 底部固定区域
+    </div>
+</div>
+
+<div id="pingfen" style="display: none;">
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">订单id</label>
+            <div class="layui-input-block">
+                <input id="orderId" readonly style="border: none">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">服务整体评价</label>
+            <div class="layui-input-block">
+                <div id="star"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">司机服务态度</label>
+            <div class="layui-input-block">
+                <div id="star1"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">客服服务态度</label>
+            <div class="layui-input-block">
+                <div id="star2"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo" onclick="addEvaluation()">确认</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<script src="layui.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+    var arr=location.search.slice(1).split("=");
+    //JavaScript代码区域
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+
+    layui.use('table', function() {
+        var table = layui.table;
+        var $ = layui.jquery;
+
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            , height: 500
+            , width: 875
+            , url: 'http://localhost:8091/orders/findByTypeAndUserId/' + arr[1] //数据接口
+            , page: true //开启分页
+            , cols: [
+                [
+                    {field: 'id', title: 'ID', width: 80,style:'height:80px', sort: true}
+                    , {field: 'origin', title: '起点', width: 135}
+                    , {field: 'destination', title: '终点', width: 135}
+                    , {field: 'price', title: '价格', width: 80}
+                    , {field: 'date', title: '日期', width: 177, sort: true}
+                    , {field: 'driver', title: '司机', width: 100}
+                    , {fixed: 'right', width: 165, align: 'center',style:'height:80px', toolbar: '#barDemo'}
+                ]
+            ]
+        });
+    });
+
+    function openModak(){
+        layui.use(['layer','table'], function(){
+            var layer = layui.layer;
+            var table =layui.table;
+            var $ = layui.jquery;
+            table.on('row(demo)', function (obj) {
+                var data = obj.data;
+                console.log(data);
+                var id = data.id;
+                layer.confirm("确认要驳回吗，司机还可看到此单", { title: "确认驳回" }, function (index) {
+                    axios.get('http://localhost:8091/orders/updateDriverAndType', {
+                        params: {
+                            'ordersId': id
+                        }
+                    }).then(function (response) {
+                        setTimeout(function(){
+                            //刷新
+                            location.reload();
+                        },1000);
+                    })
+                });
+            })
+        })
+    }
+
+    var cont=document.getElementById("content");
+    axios.get('http://localhost:8091/findUserById', {
+        params: {
+            'id': cont.innerText
+        }
+    })
+        .then(function (response) {
+            console.log(response);
+            var data = response.data;
+            document.getElementById('head').src = data.path;
+        })
+        .catch(function (error) {
+
+            console.log(error);
+        });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>注册</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description"/>
+    <meta content="Coderthemes" name="author"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <!-- App favicon -->
+
+    <!-- App css -->
+    <link href="../css/main.css" rel="stylesheet" type="text/css"/>
+
+
+</head>
+
+<body>
+<div id="bg">
+
+    <div id="login_wrap">
+        <div id="login"><!-- 登录注册切换动画 -->
+
+            <div id="status" style="width: 100px; height: 40px;">
+                <i>注册</i>
+            </div>
+
+            <span>
+                    <form th:action="@{/registerUser}" method="post">
+
+                        <p class="form"><input type="text" id="user" placeholder="用户名" name="username"></p>
+                        <p class="form"><input type="password" id="passwd" placeholder="密码" name="password"></p>
+                        <p class="form"><input type="password" id="confirm-passwd" placeholder="确认密码" name="rePassword"></p>
+                        <p class="form"><input type="email" id="email" placeholder="邮箱" name="email"></p>
+                        <p class="form"><input type="text" id="tel" placeholder="联系方式" name="tel"></p>
+                        <p class="form">
+                            <select id="role" style="width: 300px;height: 30px;" name="role">
+                                <option value="请选择" style="display: none;">请选择角色</option>
+                                <option value="司机">司机</option>
+                                <option value="用户">用户</option>
+                            </select>
+                        </p>
+                        <input type="submit" value="注册" class="btn" style="margin-right: 20px;">
+                        <input value="取消" class="btn" id="btn" onclick="jump()" style="text-align:center;">
+                    </form>
+                </span>
+        </div>
+
+        <div id="login_img"><!-- 图片绘制框 -->
+            <span class="circle">
+                    <span></span>
+                    <span></span>
+                </span>
+            <span class="star">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            <span class="fly_star">
+                    <span></span>
+                    <span></span>
+                </span>
+            <p id="title">打车软件客服监管及满意度评价<br>分析平台</p>
+        </div>
+    </div>
+</div>
+<script>
+    
+    function jump() {
+        window.location.href="http://localhost:8091/index";
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>系统管理员首页</title>
+    <link rel="stylesheet" href="css/layui.css">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo" style="width: 300px">打车软件客服监管及满意度评价分析平台</div>        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="" class="layui-nav-img" id="head">
+                    <span th:text="${session.userId}" style="display: none;" id="content"></span>
+                    <span th:text="${session.username}"></span>(<span th:text="${session.role}"></span>)
+                </a>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item"><a th:href="@{/adminIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;管理员首页</a></li>
+                <li class="layui-nav-item"><a th:href="@{/permission}"><i class="layui-icon">&#xe66f;</i>&nbsp;&nbsp;权限管理</a></li>
+                <li class="layui-nav-item"><a th:href="@{/satisfaction}"><i class="layui-icon">&#x1005;</i>&nbsp;&nbsp;满意度评价管理</a></li>
+                <li class="layui-nav-item layui-this"><a th:href="@{/test}"><i class="layui-icon">&#xe6fc;</i>&nbsp;&nbsp;客服监管</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/adminInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">客服监管</div>
+        <div id="chart" style="width: 700px;height:400px;margin:0 auto;"></div>
+    </div>
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        © layui.com - 底部固定区域
+    </div>
+</div>
+
+<div id="test" style="display: none;">
+    <table id="demo" lay-filter="demo"></table>
+</div>
+
+
+</body>
+<script src="layui.js"></script>
+<script src="js/echarts.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+    layui.use('element', function(){
+        var element = layui.element;
+    });
+    axios.get('http://localhost:8091/message/getEmployeeMessage')
+        .then(function (response) {
+        console.log(response.data);
+        var map = response.data;
+        var xData = [];
+        var yData = [];
+        for(var key in map){
+            yData.push(map[key]);
+            xData.push(key);
+        }
+        var option = {
+            title: {
+                text: '客服对话中包含禁忌话语的次数',
+                left: 'center',
+                textStyle: {
+                    color: '#131e54'
+                }
+            },
+            //提示框(包括颜色，具体大小，具体模型)
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(255,255,255,0.8)',
+                extraCssText: 'box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);',
+                textStyle: {
+                    color: '#6a717b',
+                }
+
+            },
+            //图表与边框的距离,网格
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            yAxis: [{
+                type: 'value',
+                //坐标轴文本标签
+                axisLabel: {
+                    margin: 10,
+                    textStyle: {
+                        fontSize: 12,
+                        color: '#00868B'
+                    }
+                },
+                axisLine: {
+                    lineStyle: {
+                        color: '#192469'
+                    }
+                }
+
+            }],
+            xAxis: [{
+                type: 'category',
+                data: xData,
+                axisTick: {
+                    alignWithLabel: true,
+                },
+                //坐标轴文本标签
+                axisLabel: {
+                    margin: 10,
+                    textStyle: {
+                        fontSize: 14,
+                        color: '#53868B'
+                    },
+                    // interval: 0,
+                    // rotate: 40,
+                    // 坐标轴上的名称超过五个字,超过的字用省略号代替
+                    formatter: function (value) {
+                        if (value.length > 5) {
+                            return value.substring(0, 5) + "...";
+                        } else {
+                            return value;
+                        }
+                    }
+                },
+                axisLine: {
+                    lineStyle: {
+                        color: '#192469'
+                    }
+                }
+
+            }],
+            series: [{
+                data: yData,
+                name: '',
+                type: 'bar',
+                barWidth: 18,
+                label: {
+                    //在柱状图的柱子里显示具体数量(position为数字显示的具体位置)
+                    normal: {
+                        show: true,
+                        position: 'top',
+                        textStyle: {
+                            color: 'black' //color of value
+                        }
+                    }
+                },
+                //柱子的显示样式(包括颜色,圆角,阴影等)
+                itemStyle: {
+                    normal: {
+                        color: '#2e8d94',
+                        barBorderRadius: [15, 15, 15, 15],
+                        shadowColor: 'rgba(0,0,0,0.1)',
+                        shadowBlur: 3,
+                        shadowOffsetY: 3
+                    }
+                }
+            }]
+        }
+
+        //初始化echarts实例
+        var myChart = echarts.init(document.getElementById('chart'));
+
+        //使用制定的配置项和数据显示图表
+        myChart.setOption(option);
+        myChart.on("click", function(param) {
+            console.log(param);
+            layui.use(['layer','table'], function() {
+                var layer = layui.layer;
+                var table = layui.table;
+                var $ =layui.$;
+
+                layer.open({
+                    type:1,//类型
+                    area:['710px','400px'],//定义宽和高
+                    title:'信息详情',//题目
+                    shadeClose:false,//点击遮罩层关闭
+                    content: $('#test')//打开的内容
+                });
+
+                table.render({
+                    elem: '#demo'
+                    , height: 300
+                    , width: 697
+                    , url: 'http://localhost:8091/message/findMessageByFromUser/'+param.name //数据接口
+                    , page: true //开启分页
+                    , cols: [
+                        [
+                            {field: 'id', title: 'ID', width: 80, sort: true}
+                            , {field: 'fromUser', title: '发送人', width: 120}
+                            , {field: 'toUser', title: '接收人', width: 120}
+                            , {field: 'date', title: '日期', width: 177}
+                            , {field: 'alert', title: '内容', width: 200}
+                        ]
+                    ]
+                });
+            })
+        });
+    })
+
+    var cont=document.getElementById("content");
+    axios.get('http://localhost:8091/findUserById', {
+        params: {
+            'id': cont.innerText
+        }
+    })
+        .then(function (response) {
+            console.log(response);
+            var data = response.data;
+            document.getElementById('head').src = data.path;
+        })
+        .catch(function (error) {
+
+            console.log(error);
+        });
+
+</script>
+</html>
