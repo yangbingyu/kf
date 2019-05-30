@@ -1,6 +1,7 @@
 package com.example.kf.resource;
 
 import com.example.kf.domain.User;
+import com.example.kf.domain.UserDTO;
 import com.example.kf.domain.common.MyJson;
 import com.example.kf.domain.enums.Role;
 import com.example.kf.service.TakeTaxiService;
@@ -115,6 +116,7 @@ public class UserResource {
             user1.setTel(tel);
             user1.setRole(role);
             user1.setType(1);
+            user1.setpath("img/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg");
             userService.saveUser(user1);
             return "/login";
         }else {
@@ -130,22 +132,39 @@ public class UserResource {
 
     @RequestMapping(value="/findUser")
     @ResponseBody
-    public MyJson<User> findUser() {
+    public MyJson<UserDTO> findUser() {
         List<User> list = userService.findUser();
-        int size = list.size();
-        MyJson<User> myJson = new MyJson();
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : list){
+            UserDTO userDTO = new UserDTO();
+            userDTO.setId(user.getId());
+            userDTO.setUsername(user.getUsername());
+            userDTO.setPassword(user.getPassword());
+            userDTO.setEmail(user.getEmail());
+            userDTO.setTel(user.getTel());
+            userDTO.setRole(user.getRole());
+            userDTO.setpath(user.getpath());
+            if(user.getType()==1){
+                userDTO.setType("已启用");
+            }
+            else {
+                userDTO.setType("已禁用");
+            }
+            userDTOS.add(userDTO);
+        }
+        int size = userDTOS.size();
+        MyJson<UserDTO> myJson = new MyJson();
         myJson.setCode(0);
         myJson.setMsg("");
         myJson.setCount(size);
-        myJson.setData(list);
-        System.out.println(myJson.toString());
+        myJson.setData(userDTOS);
         return myJson;
     }
 
     @RequestMapping("/addUser")
     public String addUser(User user){
-        System.out.println("================"+user);
         user.setType(1);
+        user.setpath("img/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg");
         String username = user.getUsername();
         User user2 = userService.findUserByUsername(username);
         if(user2 == null){
@@ -261,6 +280,21 @@ public class UserResource {
         User user = userService.findUserById(id);
         user.setTel(tel);
         user.setEmail(email);
+        userService.saveUser(user);
+    }
+
+    @RequestMapping("/ableUser")
+    @ResponseBody
+    public void ableUser(int id){
+        User user = userService.findUserById(id);
+        user.setType(1);
+        userService.saveUser(user);
+    }
+    @RequestMapping("/disableUser")
+    @ResponseBody
+    public void disableUser(int id){
+        User user = userService.findUserById(id);
+        user.setType(0);
         userService.saveUser(user);
     }
 }

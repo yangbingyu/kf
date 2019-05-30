@@ -47,11 +47,11 @@
     <div class="layui-body">
         <!-- 内容主体区域 -->
         <div style="padding: 15px;">填写打车信息</div>
-        <div style="margin: 0 auto;width: 40%;border: solid 1px #000000">
-            <div style="width: 50%;height: 30px;left: 50px;position: relative">
+        <div style="margin: 0 auto;width: 40%;height:350px;border: solid 1px #000000">
+            <div style="width: 50%;height: 30px;left: 50px;top: 20px;position: relative">
                 <span>您当前所在城市：<span th:text="${session.city}"></span></span>
             </div>
-            <form class="layui-form" action="">
+            <form class="layui-form" action="" style="top: 30px;position: relative">
                 <div class="layui-form-item">
                     <label class="layui-form-label">起点</label>
                     <div class="layui-input-inline">
@@ -73,7 +73,7 @@
 
                 <div class="layui-form-item">
                     <div class="layui-input-block">
-                        <button class="layui-btn" onclick="openModak()">预约</button>
+                        <a class="layui-btn" onclick="openModak()">预约</a>
                         <button type="reset" class="layui-btn layui-btn-primary">重置</button>
                     </div>
                 </div>

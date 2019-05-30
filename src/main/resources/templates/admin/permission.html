@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>权限管理</title>
     <link rel="stylesheet" href="css/layui.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
     <style>
 
     </style>
@@ -46,10 +47,6 @@
             <i class="layui-icon">&#xe608;</i> 添加
         </button>
         <table id="demo" lay-filter="demo"></table>
-        <script id="barDemo" type="text/html">
-            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openModak()"><i class="layui-icon">&#xe642;</i></a>
-            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openDelete()"><i class="layui-icon">&#xe640;</i></a>
-        </script>
 
     </div>
 
@@ -168,7 +165,7 @@
         table.render({
             elem: '#demo'
             , height: 500
-            , width: 910
+            , width: 1090
             , url: 'http://localhost:8091/findUser' //数据接口
             , page: true //开启分页
             , cols: [
@@ -178,7 +175,11 @@
                     , {field: 'email', title: '邮箱', width: 177}
                     , {field: 'tel', title: '联系方式', width: 177}
                     , {field: 'role', title: '角色', width: 177}
-                    , {fixed: 'right', width: 177, align: 'center',style:'height:80px', toolbar: '#barDemo'}
+                    , {field: 'type', title: '是否启用', width: 177}
+                    , {fixed: 'right', width: 177, align: 'center',style:'height:80px', toolbar: '<div><a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openModak()"><i class="layui-icon">&#xe642;</i></a>\n' +
+                        '            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openDelete()"><i class="layui-icon">&#xe640;</i></a>\n' +
+                        '{{# if(d.type=="已禁用"){}}            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="openable()"><i class="fa fa-unlock"></i></a>{{#}}}\n'+
+                        '{{# if(d.type=="已启用"){}}            <a class="layui-btn layui-btn-danger layui-btn-xs" onclick="opendisable()"><i class="fa fa-lock"></i></a>{{#}}}</div>'}
                 ]
             ]
         });
@@ -296,6 +297,56 @@
 
             console.log(error);
         });
+
+    function openable(){
+        layui.use(['layer','table'], function(){
+            var layer = layui.layer;
+            var table =layui.table;
+            var $ = layui.jquery;
+            table.on('row(demo)', function (obj) {
+                var data = obj.data;
+                console.log(data);
+                var id = data.id;
+                layer.confirm("确认要启用吗", { title: "启用确认" }, function (index) {
+                    axios.get('http://localhost:8091/ableUser', {
+                        params: {
+                            'id': id
+                        }
+                    }).then(function (response) {
+                        setTimeout(function(){
+                            //刷新
+                            location.reload();
+                        },1000);
+                    })
+                });
+            })
+        })
+    }
+
+    function opendisable(){
+        layui.use(['layer','table'], function(){
+            var layer = layui.layer;
+            var table =layui.table;
+            var $ = layui.jquery;
+            table.on('row(demo)', function (obj) {
+                var data = obj.data;
+                console.log(data);
+                var id = data.id;
+                layer.confirm("确认要禁用吗", { title: "禁用确认" }, function (index) {
+                    axios.get('http://localhost:8091/disableUser', {
+                        params: {
+                            'id': id
+                        }
+                    }).then(function (response) {
+                        setTimeout(function(){
+                            //刷新
+                            location.reload();
+                        },1000);
+                    })
+                });
+            })
+        })
+    }
 </script>
 </body>
 </html>
