@@ -105,31 +105,31 @@
     <form class="layui-form" th:action="@{/addUser}" method="post">
         <div class="layui-form-item">
             <label class="layui-form-label">用户名</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline">
                 <input id="addUsername" name="username" onblur="checkUsername(this.value)" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">密码</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline">
                 <input id="addPassword" name="password" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">邮箱</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline">
                 <input id="addEmail" name="email" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">联系方式</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline">
                 <input id="addTel" name="tel" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">角色</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline">
                 <select id="addRole" name="role" lay-verify="required">
                     <option value="客服">客服</option>
                     <option value="系统管理员">系统管理员</option>
@@ -167,6 +167,8 @@
             , height: 500
             , width: 1090
             , url: 'http://localhost:8091/findUser' //数据接口
+            , limit: 10
+            , limits: [10, 20, 50]
             , page: true //开启分页
             , cols: [
                 [

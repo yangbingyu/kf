@@ -80,6 +80,8 @@
             , height: 500
             , width: 875
             , url: 'http://localhost:8091/orders/findByTypeAndDriver/' + arr[1] //数据接口
+            , limit: 10
+            , limits: [10, 20, 50]
             , page: true //开启分页
             , cols: [
                 [
@@ -105,7 +107,7 @@
                 console.log(data);
                 var id = data.id;
                 layer.confirm("确认要取消吗，还可接其他单", { title: "确认取消" }, function (index) {
-                    axios.get('http://localhost:8091/orders/cancelOrders', {
+                    axios.get('http://localhost:8091/orders/updateDriverAndType', {
                         params: {
                             'ordersId': id
                         }
@@ -133,6 +135,14 @@
         })
         .catch(function (error) {
 
+            console.log(error);
+        });
+
+    axios.get('http://localhost:8091/orders/findOrdersByUserId/'+cont.innerText)
+        .then(function (response) {
+            console.log("--------------"+response);
+        })
+        .catch(function (error) {
             console.log(error);
         });
 

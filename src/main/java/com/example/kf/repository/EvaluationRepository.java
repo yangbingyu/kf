@@ -2,6 +2,8 @@ package com.example.kf.repository;
 
 import com.example.kf.domain.Evaluation;
 import com.example.kf.resource.EvaluationParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,5 +20,5 @@ public interface EvaluationRepository extends JpaRepository<Evaluation,Integer> 
     List findCount();
 
     @Query(value = "select * from evaluation where tag = ?1",nativeQuery = true)
-    List<Evaluation> findEvaluationByTag(String tag);
+    Page<Evaluation> findEvaluationByTag(String tag, Pageable pageable);
 }

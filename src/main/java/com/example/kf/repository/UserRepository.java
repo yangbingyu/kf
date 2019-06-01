@@ -1,6 +1,8 @@
 package com.example.kf.repository;
 
 import com.example.kf.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +18,7 @@ public interface UserRepository extends JpaRepository<User,Integer>{
     User findUserByUsername(String username);
 
     @Query(value = "select * from user where role = '客服' or role = '系统管理员'",nativeQuery = true)
-    List<User> findUser();
+    Page<User> findUser(Pageable pageable);
 
     @Query(value = "select * from User where role = '客服'",nativeQuery = true)
     List<User> findUserByRole();

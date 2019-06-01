@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>回复用户</title>
+    <link rel="stylesheet" href="css/layui.css">
+    <style>
+        .bubble:after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: -16px;
+            width: 12px;
+            height: 20px;
+            border-width: 0;
+            border-style: solid;
+            border-color: transparent;
+            margin-left: -6px;
+            border-bottom-width: 7px;
+            border-bottom-color: currentColor;
+            border-radius: 0 0 40px 0;
+            color: #009688;
+        }
+
+        .bubble1:after {
+            content: '';
+            position: absolute;
+            right: 100%;
+            top: -16px;
+            width: 12px;
+            height: 20px;
+            border-width: 0;
+            border-style: solid;
+            border-color: transparent;
+            margin-right: -6px;
+            border-bottom-width: 7px;
+            border-bottom-color: currentColor;
+            border-radius: 0 0 0 40px;
+            color: #E4E4E4;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo" style="width: 300px">打车软件客服监管及满意度评价分析平台</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="" class="layui-nav-img" id="head">
+                    <span th:text="${session.userId}" style="display: none;" id="content"></span>
+                    <span id="username" th:text="${session.username}"></span>(<span th:text="${session.role}"></span>)
+                </a>
+            </li>
+            <li class="layui-nav-item"><a th:href="@{/logout}">退出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item"><a th:href="@{/employeeIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;客服首页</a></li>
+                <li class="layui-nav-item  layui-this"><a th:href="@{'/employeeChat?username='+${session.username}}"><i class="layui-icon">&#xe63a;</i>&nbsp;&nbsp;咨询</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/employeeInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">回复用户</div>
+        <div>
+            <div style="margin: 0 auto;width: 55%;height:350px;border: solid 2px #000000">
+                <div id="userList" style="border-right:solid 1px #c0c4c7;float: left;width: 30%;height: 100%;overflow-y: auto;overflow-x:hidden ;"></div>
+                <div style="width: 68%;height: 100%;float: right">
+                    <div id="cont" style="width: 100%;height: 85%;overflow-y: auto;overflow-x:hidden ;"></div>
+                    <div style="width: 100%;height: 15%;">
+                        <div style="width: 90%;background-color: #e4e4e4;height: 65%;margin-top:10px;margin-left:10px;border-radius:6px;border: 1px solid transparent">
+                            <input id="msg" placeholder="  请输入内容……"
+                                   style="width:85%;height:95%;margin:0 auto;border-radius:6px;border: 1px solid transparent;background-color: #e4e4e4;"/>
+                            <i class="layui-icon" onclick="send();"
+                               style="margin:0 auto;float: right;margin-right: 5px;height:95%;border: 1px solid transparent;line-height: 26px">&#xe609;</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        © layui.com - 底部固定区域
+    </div>
+</div>
+
+<script src="layui.js"></script>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+    //JavaScript代码区域
+    layui.use('element', function(){
+        var element = layui.element;
+
+    });
+    var cont=document.getElementById("content");
+    axios.get('http://localhost:8091/findUserById', {
+        params: {
+            'id': cont.innerText
+        }
+    })
+        .then(function (response) {
+            console.log(response);
+            var data = response.data;
+            document.getElementById('head').src = data.path;
+        })
+        .catch(function (error) {
+
+            console.log(error);
+        });
+
+</script>
+
+<script type="text/javascript">
+    var ws;
+
+    var arr = location.search.slice(1).split("=");
+    var userName = arr[1];
+    //通过URL请求服务端
+    //进入聊天页面就是一个通信管道
+    if ('WebSocket' in window) {
+
+        ws = new WebSocket("ws://localhost:8091/chatSocket/" + userName);
+
+    } else if ('MozWebSocket' in window) {
+        ws = new MozWebSocket("ws://localhost:8091/chatSocket/" + userName);
+    } else {
+        alert('WebSocket is not supported by this browser.');
+    }
+
+    //监听服务器发送过来的所有信息
+    ws.onmessage = function (event) {
+        eval("var result=" + event.data);
+        console.log(event.data);
+        //如果后台发过来的alert不为空就显示出来
+        if (result.alert != undefined) {
+            if(result.alert.match("进入聊天室") || result.alert.match("退出当前聊天室")){
+                $("#cont").append("<div style='font-size: 12px;color: #b8b8b8;width:60%;margin: 0 auto'>-------------" + result.alert + "-------------</div><br/>");
+            }
+        }
+
+        //如果用户列表不为空就显示
+        if (result.names != undefined) {
+            var username = document.getElementById("username").innerHTML;
+            axios.get('http://localhost:8091/findUserByUsername/' + username)
+                .then(function (response) {
+                    var path = response.data.path;
+                    $("#userList").html("");
+                    $(result.names).each(
+                        function () {
+                            var username = this;
+                            axios.get('http://localhost:8091/findUserByUsername/' + username)
+                                .then(function (response) {
+                                    var data = response.data;
+                                    $("#userList").append("<div style='margin-top: 5px;margin-left: 5px'>"
+                                        +"<img style='width: 36px;height: 36px;border-radius: 18px' id='image1' src='" + path + "'/>"
+                                        + "&nbsp;&nbsp;&nbsp;&nbsp;"+username + "(" + data.role + ")"
+                                        +"<input  type=radio  value='" + username + "' style='float: right;margin-right: 10px;margin-top: 12px'/>"
+                                        + "</div><hr>");
+                                })
+
+                        });
+                })
+            //刷新用户列表之前清空一下列表，免得会重复，因为后台只是单纯的添加
+
+        }
+
+        //将用户名字和当前时间以及发送的信息显示在页面上
+        var username = document.getElementById("username").innerHTML;
+        // var time = result.date.split(" ")
+        axios.get('http://localhost:8091/findUserByUsername/' + username)
+            .then(function (response) {
+                var path = response.data.path;
+                if (result.fromUser != undefined) {
+                    if(!result.sendMsg.match("正在私聊你：")){
+                        if (result.fromUser == username) {
+                            $("#cont").append("<div style='font-size: 12px;color: #b4b4b4;width:36%;margin: 0 auto'>"+result.date+"</div>"
+                                +"<div style='float: right;right:5px;position:relative;width: 95%;height: auto'>"
+                                +"<div style='float: right;width: 36px;height: 36px;border-radius: 18px'><img style='width: 36px;height: 36px;border-radius: 18px' id='image' src='" + path + "'></div>"
+                                +"<div style='left:200px;position:relative;width: 120px'>"
+                                + "<div style='left: 90px;position: relative'>" +result.fromUser + "</div>"
+                                +"<div style='position: relative;background-color:transparent;height: 5px;width: 120px'></div>"
+                                + "<div class='bubble' style='position: relative;height:auto;width: 120px;border-radius: 5px;background-color: #009688;'>"
+                                + "<div style='height:auto;width:110px;word-wrap:break-word;margin-left: 10px;font-size: 12px;color: white'>"+result.sendMsg + "</div></div></div></div><br/>");
+
+                        } else {
+                            $("#cont").append("<div style='font-size: 12px;color: #b4b4b4;width:36%;margin: 0 auto'>"+result.date+"</div>"
+                                +"<div style='float: left;right:5px;position:relative;width: 95%;height: auto'>"
+                                +"<div style='float: left;margin-left:5px;width: 36px;height: 36px;border-radius: 18px'><img style='width: 36px;height: 36px;border-radius: 18px' id='image' src='" + path + "'></div>"
+                                +"<div style='left:45px;position:relative;width: 120px'>"
+                                + "<div style='left: -30px;position: relative'>" +result.fromUser + "</div>"
+                                +"<div style='position: relative;background-color:transparent;height: 5px;width: 120px'></div>"
+                                + "<div class='bubble1' style='position: relative;height:auto;width: 120px;border-radius: 5px;background-color: #E4E4E4;left: 10px'>"
+                                + "<div style='height:auto;width:110px;word-wrap:break-w2ord;margin-left: 10px;font-size: 12px;'>"+result.sendMsg + "</div></div></div></div><br/>");
+                        }
+                    }else if(result.sendMsg.match("正在私聊你：")){
+                        console.log("--------------"+result.sendMsg);
+                        if (result.fromUser != username) {
+                            $("#cont").append("<div style='font-size: 12px;color: #b4b4b4;width:36%;margin: 0 auto'>" + result.date + "</div>"
+                                + "<div style='float: left;right:5px;position:relative;width: 95%;height: auto'>"
+                                + "<div style='float: left;margin-left:5px;width: 36px;height: 36px;border-radius: 18px'><img style='width: 36px;height: 36px;border-radius: 18px' id='image' src='" + path + "'></div>"
+                                + "<div style='left:45px;position:relative;width: 120px'>"
+                                + "<div style='left: -30px;position: relative;width: 150px;font-size: 12px'>" + result.fromUser + "&nbsp;&nbsp; <font style='color: red;font-size: 12px'>正在私聊你</font>" + "</div>"
+                                + "<div style='position: relative;background-color:transparent;height: 5px;width: 120px'></div>"
+                                + "<div class='bubble1' style='position: relative;height:auto;width: 120px;border-radius: 5px;background-color: #E4E4E4;left: 10px'>"
+                                + "<div style='height:auto;width:110px;word-wrap:break-w2ord;margin-left: 10px;font-size: 12px;'>" + result.alert + "</div></div></div></div><br/>");
+                        }
+                    }
+
+                }
+            })
+
+
+    };
+
+    //将消息发送给后台服务器
+    function send() {
+        //拿到需要单聊的用户名
+        var ss = $("#userList :checked");
+        //alert("群聊还是私聊"+ss.size());
+        var to = $('#userList :checked').val();
+        if (to == userName) {
+            alert("你不能给自己发送消息啊");
+            return;
+        }
+        //根据勾选的人数确定是群聊还是单聊
+        var value = $("#msg").val();
+        //alert("消息内容为"+value);
+        var object = null;
+        if (ss.size() == 0) {
+            object = {
+                msg: value,
+                type: 1, //1 广播 2单聊
+            };
+        } else {
+            object = {
+                toUser: to,
+                msg: value,
+                type: 2, //1 广播 2单聊
+            };
+        }
+        //将object转成json字符串发送给服务端
+        var json = JSON.stringify(object);
+        ws.send(json);
+        //消息发送后将消息栏清空
+        $("#msg").val("");
+    }
+</script>
+</body>
+</html>

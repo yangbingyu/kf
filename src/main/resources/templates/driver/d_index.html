@@ -79,6 +79,13 @@
 
             console.log(error);
         });
+
+    axios.get('http://localhost:8091/orders/deleteOrders').then(function (response) {
+        console.log(response);
+    })
+        .catch(function (error) {
+            console.log(error);
+        });
 </script>
 </body>
 </html>

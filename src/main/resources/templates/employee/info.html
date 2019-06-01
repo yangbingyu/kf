@@ -28,7 +28,7 @@
             <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
             <ul class="layui-nav layui-nav-tree"  lay-filter="test">
                 <li class="layui-nav-item"><a th:href="@{/employeeIndex}"><i class="layui-icon">&#xe68e;</i>&nbsp;&nbsp;客服首页</a></li>
-                <li class="layui-nav-item"><a th:href="@{'/toTest?username='+${session.username}}"><i class="layui-icon">&#xe63a;</i>&nbsp;&nbsp;咨询</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/employeeChat?username='+${session.username}}"><i class="layui-icon">&#xe63a;</i>&nbsp;&nbsp;咨询</a></li>
                 <li class="layui-nav-item layui-this"><a th:href="@{'/employeeInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
             </ul>
         </div>

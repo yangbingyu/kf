@@ -88,8 +88,10 @@
         table.render({
             elem: '#demo'
             , height: 500
-            , width: 798
+            , width: 855
             , url: 'http://localhost:8091/orders/findByType' //数据接口
+            , limit: 10
+            , limits: [10, 20, 50]
             , page: true //开启分页
             , cols: [
                 [

@@ -8,11 +8,17 @@ import com.example.kf.domain.common.MyJson;
 import com.example.kf.repository.EvaluationRepository;
 import com.example.kf.service.OrdersService;
 import com.example.kf.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.text.SimpleDateFormat;
@@ -29,6 +35,8 @@ public class OrdersResource {
     private EvaluationRepository evaluationRepository;
     @Autowired
     private UserService userService;
+
+    Logger logger = LoggerFactory.getLogger(OrdersResource.class);
 
     @RequestMapping("/completeOrders")
     public String completeOrders(){
@@ -52,13 +60,14 @@ public class OrdersResource {
     /**
      * 根据当前登录用户得到已完成订单
      * @param userId
-     * @param map
      * @return
      */
     @RequestMapping("/orders/findAll/{userId}")
     @ResponseBody
-    public MyJson<OrdersDTO> findAllByCustomerId(@PathVariable int userId, ModelMap map) {
-        List<Orders> list = ordersService.findAllByCustomerId(userId);
+    public MyJson<OrdersDTO> findAllByCustomerId(@PathVariable int userId, @RequestParam int page,@RequestParam int limit) {
+        logger.debug("根据当前登录用户得到已完成订单");
+        Pageable pageable = new PageRequest(page-1,limit);
+        Page<Orders> list = ordersService.findAllByCustomerId(userId,pageable);
         List<OrdersDTO> ordersDTOS = new ArrayList<>();
         for(Orders orders: list){
             User user = userService.findUserById(orders.getDriver());
@@ -71,11 +80,11 @@ public class OrdersResource {
             ordersDTO.setPrice(orders.getPrice());
             ordersDTOS.add(ordersDTO);
         }
-        int size = ordersDTOS.size();
+        long size = list.getTotalElements();
         MyJson<OrdersDTO> myJson = new MyJson();
         myJson.setCode(0);
         myJson.setMsg("");
-        myJson.setCount(size);
+        myJson.setCount((int) size);
         myJson.setData(ordersDTOS);
         System.out.println(myJson.toString());
         return myJson;
@@ -92,6 +101,7 @@ public class OrdersResource {
     @RequestMapping("/orders/evaluation/{userId}")
     @ResponseBody
     public void evaluation(@PathVariable int userId, String overallEvaluation, String driverEvaluation, String  employeeEvaluation, int orderId, String review) {
+        logger.debug("id为"+userId+"的用户对id为"+orderId+"的订单进行了评价，分数分别为："+overallEvaluation+","+driverEvaluation+","+employeeEvaluation);
         Evaluation evaluation = new Evaluation();
         evaluation.setCustomerId(userId);
         evaluation.setDriverEvaluation(driverEvaluation);
@@ -99,6 +109,7 @@ public class OrdersResource {
         evaluation.setOrderId(orderId);
         evaluation.setOverallEvaluation(overallEvaluation);
         evaluation.setReview(review);
+        logger.debug("对评价进行分类");
         if (review.contains("司机态度好") || review.contains("司机态度不错") || Integer.parseInt(driverEvaluation)>3){
             evaluation.setTag("司机态度好");
         }
@@ -137,7 +148,7 @@ public class OrdersResource {
     @RequestMapping("/orders/getEvaluation")
     @ResponseBody
     public Evaluation getEvaluation(int orderId){
-        System.out.println(orderId);
+        logger.debug("通过订单id查询评价");
         Evaluation evaluation = evaluationRepository.findEvaluationByOrderId(orderId);
         return evaluation;
     }
@@ -149,8 +160,8 @@ public class OrdersResource {
      */
     @RequestMapping("/saveOrders")
     public String saveOrders(Orders orders){
+        logger.debug("id为"+orders.getCustomerId()+"的用户预约了"+orders.getDate()+"从"+orders.getOrigin()+"到"+orders.getDestination()+"的车");
         orders.setType(0);
-        System.out.println("--------------------"+orders.toString());
         ordersService.saveOrders(orders);
         return "forward:/takeTaxi";
     }
@@ -161,14 +172,16 @@ public class OrdersResource {
      */
     @RequestMapping("/orders/findByType")
     @ResponseBody
-    public MyJson<Orders> findByType() {
-        List<Orders> list = ordersService.findByType();
-        int size = list.size();
+    public MyJson<Orders> findByType(@RequestParam int page,@RequestParam int limit) {
+        logger.debug("查询所有未被接的订单");
+        Pageable pageable = new PageRequest(page-1,limit);
+        Page<Orders> list = ordersService.findByType(pageable);
+        long size = list.getTotalElements();
         MyJson<Orders> myJson = new MyJson();
         myJson.setCode(0);
         myJson.setMsg("");
-        myJson.setCount(size);
-        myJson.setData(list);
+        myJson.setCount((int) size);
+        myJson.setData(list.getContent());
         System.out.println(myJson.toString());
         return myJson;
     }
@@ -180,8 +193,10 @@ public class OrdersResource {
      */
     @RequestMapping("/orders/findByTypeAndUserId/{userId}")
     @ResponseBody
-    public MyJson<OrdersDTO> findByTypeAndUserId(@PathVariable int userId) {
-        List<Orders> list = ordersService.findByTypeAndUserId(userId);
+    public MyJson<OrdersDTO> findByTypeAndUserId(@PathVariable int userId,@RequestParam int page,@RequestParam int limit) {
+        logger.debug("通过用户id查询已接订单");
+        Pageable pageable = new PageRequest(page-1,limit);
+        Page<Orders> list = ordersService.findByTypeAndUserId(userId,pageable);
         List<OrdersDTO> ordersDTOS = new ArrayList<>();
         for(Orders orders: list){
             User user = userService.findUserById(orders.getDriver());
@@ -194,31 +209,33 @@ public class OrdersResource {
             ordersDTO.setPrice(orders.getPrice());
             ordersDTOS.add(ordersDTO);
         }
-        int size = ordersDTOS.size();
+        long size = list.getTotalElements();
         MyJson<OrdersDTO> myJson = new MyJson();
         myJson.setCode(0);
         myJson.setMsg("");
-        myJson.setCount(size);
+        myJson.setCount((int) size);
         myJson.setData(ordersDTOS);
         System.out.println(myJson.toString());
         return myJson;
     }
 
     /**
-     * 通过用户id查询已接订单
+     * 通过用户id查询未接订单
      * @param userId
      * @return
      */
     @RequestMapping("/orders/findByTypeAndCustomerId/{userId}")
     @ResponseBody
-    public MyJson<Orders> findByTypeAndCustomerId(@PathVariable int userId) {
-        List<Orders> list = ordersService.findByTypeAndCustomerId(userId);
-        int size = list.size();
+    public MyJson<Orders> findByTypeAndCustomerId(@PathVariable int userId,@RequestParam int page,@RequestParam int limit) {
+        logger.debug("通过用户id查询未接订单");
+        Pageable pageable = new PageRequest(page-1,limit);
+        Page<Orders> list = ordersService.findByTypeAndCustomerId(userId,pageable);
+        long size = list.getTotalElements();
         MyJson<Orders> myJson = new MyJson();
         myJson.setCode(0);
         myJson.setMsg("");
-        myJson.setCount(size);
-        myJson.setData(list);
+        myJson.setCount((int) size);
+        myJson.setData(list.getContent());
         System.out.println(myJson.toString());
         return myJson;
     }
@@ -231,6 +248,7 @@ public class OrdersResource {
     @ResponseBody
     public void updateOrdersType(int ordersId,int driver){
         Orders orders = ordersService.findOrdersById(ordersId);
+        logger.debug("司机"+driver+"接了"+orders.getDate()+"从"+orders.getOrigin()+"到"+orders.getDestination()+"的订单");
         orders.setDriver(driver);
         orders.setType(1);
         ordersService.saveOrders(orders);
@@ -241,9 +259,10 @@ public class OrdersResource {
      * @param ordersId
      * @return
      */
-    @RequestMapping("/orders/deleteOrders")
+    @RequestMapping("/orders/cancelOrders")
     @ResponseBody
-    public void deleteOrders(int ordersId){
+    public void cancelOrders(int ordersId){
+        logger.debug("用户取消了id为"+ordersId+"的订单");
         ordersService.deleteOrders(ordersId);
     }
 
@@ -256,6 +275,7 @@ public class OrdersResource {
     @ResponseBody
     public void updateDriverAndType(int ordersId){
         Orders orders = ordersService.findOrdersById(ordersId);
+        logger.debug("id为"+orders.getCustomerId()+"的用户驳回了id为"+ordersId+"的订单，接单司机id为"+orders.getDriver());
         orders.setType(0);
         orders.setDriver(0);
         ordersService.saveOrders(orders);
@@ -267,8 +287,10 @@ public class OrdersResource {
      */
     @RequestMapping("/orders/findByTypeAndDriver/{driver}")
     @ResponseBody
-    public MyJson<OrdersDTO> findByTypeAndDriver(@PathVariable int driver){
-        List<Orders> list = ordersService.findByTypeAndDriver(driver);
+    public MyJson<OrdersDTO> findByTypeAndDriver(@PathVariable int driver,@RequestParam int page,@RequestParam int limit){
+        logger.debug("根据司机的id查询已接订单");
+        Pageable pageable = new PageRequest(page-1,limit);
+        Page<Orders> list = ordersService.findByTypeAndDriver(driver,pageable);
         List<OrdersDTO> ordersDTOS = new ArrayList<>();
         for(Orders orders: list){
             User user = userService.findUserById(orders.getCustomerId());
@@ -281,11 +303,11 @@ public class OrdersResource {
             ordersDTO.setPrice(orders.getPrice());
             ordersDTOS.add(ordersDTO);
         }
-        int size = ordersDTOS.size();
+        long size = list.getTotalElements();
         MyJson<OrdersDTO> myJson = new MyJson();
         myJson.setCode(0);
         myJson.setMsg("");
-        myJson.setCount(size);
+        myJson.setCount((int) size);
         myJson.setData(ordersDTOS);
         System.out.println(myJson.toString());
         return myJson;
@@ -297,8 +319,10 @@ public class OrdersResource {
      */
     @RequestMapping("/orders/findOrdersByDriver/{driver}")
     @ResponseBody
-    public MyJson<OrdersDTO> findOrdersByDriver(@PathVariable int driver){
-        List<Orders> list = ordersService.findOrdersByDriver(driver);
+    public MyJson<OrdersDTO> findOrdersByDriver(@PathVariable int driver,@RequestParam int page,@RequestParam int limit){
+        logger.debug("根据司机的id查询已完成订单");
+        Pageable pageable = new PageRequest(page-1,limit);
+        Page<Orders> list = ordersService.findOrdersByDriver(driver,pageable);
         List<OrdersDTO> ordersDTOS = new ArrayList<>();
         for(Orders orders: list){
             User user = userService.findUserById(orders.getCustomerId());
@@ -311,29 +335,62 @@ public class OrdersResource {
             ordersDTO.setPrice(orders.getPrice());
             ordersDTOS.add(ordersDTO);
         }
-        int size = ordersDTOS.size();
+        long size = list.getTotalElements();
         MyJson<OrdersDTO> myJson = new MyJson();
         myJson.setCode(0);
         myJson.setMsg("");
-        myJson.setCount(size);
+        myJson.setCount((int) size);
         myJson.setData(ordersDTOS);
         System.out.println(myJson.toString());
         return myJson;
     }
 
-    @RequestMapping("/orders/cancelOrders")
-    @ResponseBody
-    public void cancelOrders(int ordersId){
-        Orders orders = ordersService.findOrdersById(ordersId);
-        orders.setDriver(0);
-        orders.setType(0);
-        ordersService.saveOrders(orders);
-    }
-
+    /**
+     * 预约时间超过当前时间并且订单已被接则修改为已完成订单(用户)
+     */
     @RequestMapping("/orders/findOrdersByCustomerId/{customerId}")
     @ResponseBody
     public void findOrdersByCustomerId(@PathVariable int customerId){
+        logger.debug("用户预约时间超过当前时间并且订单已被接则修改为已完成订单");
         List<Orders> ordersList = ordersService.findOrdersByCustomerId(customerId);
+        for(Orders orders : ordersList){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+            String s = df.format(new Date());
+            int i = orders.getDate().compareTo(s);
+            if(i < 0 && orders.getType() == 1){
+                orders.setType(2);
+                ordersService.saveOrders(orders);
+            }
+        }
+
+    }
+
+    /**
+     * 预约时间超过当前时间并且订单未被接则删除订单
+     */
+    @RequestMapping("/orders/deleteOrders")
+    @ResponseBody
+    public void deleteOrders(){
+        logger.debug("预约时间超过当前时间并且订单未被接则删除订单");
+        List<Orders> ordersList = ordersService.findAll();
+        for(Orders orders : ordersList){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+            String s = df.format(new Date());
+            int i = orders.getDate().compareTo(s);
+            if(i < 0 && orders.getType() == 0){
+                ordersService.deleteOrders(orders.getId());
+            }
+        }
+    }
+
+    /**
+     * 预约时间超过当前时间并且订单已被接则修改为已完成订单(司机)
+     */
+    @RequestMapping("/orders/findOrdersByUserId/{userId}")
+    @ResponseBody
+    public void findOrdersByUserId(@PathVariable int userId){
+        logger.debug("预约时间超过当前时间并且订单已被接则修改为已完成订单(司机)");
+        List<Orders> ordersList = ordersService.findOrdersByUserId(userId);
         for(Orders orders : ordersList){
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
             String s = df.format(new Date());

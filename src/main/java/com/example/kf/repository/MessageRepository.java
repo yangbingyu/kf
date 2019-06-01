@@ -1,6 +1,8 @@
 package com.example.kf.repository;
 
 import com.example.kf.domain.Message;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,5 +16,5 @@ public interface MessageRepository extends JpaRepository<Message,Integer> {
     List<String> findAllByFromUser(String fromUser);
 
     @Query(value = "select * from message where from_user = ?1",nativeQuery = true)
-    List<Message> findMessageByFromUser(String fromUser);
+    Page<Message> findMessageByFromUser(String fromUser, Pageable pageable);
 }

@@ -3,6 +3,8 @@ package com.example.kf.service;
 import com.example.kf.domain.Message;
 import com.example.kf.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,7 +46,7 @@ public class MessageService {
      * @param fromUser
      * @return
      */
-    public List<Message> findMessageByFromUser(String fromUser) {
-        return messageRepository.findMessageByFromUser(fromUser);
+    public Page<Message> findMessageByFromUser(String fromUser, Pageable pageable) {
+        return messageRepository.findMessageByFromUser(fromUser,pageable);
     }
 }

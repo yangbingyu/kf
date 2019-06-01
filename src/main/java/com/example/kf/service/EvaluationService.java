@@ -4,6 +4,8 @@ import com.example.kf.domain.Evaluation;
 import com.example.kf.repository.EvaluationRepository;
 import com.example.kf.resource.EvaluationParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +16,8 @@ public class EvaluationService {
     @Autowired
     private EvaluationRepository evaluationRepository;
 
-    public List<Evaluation> findAll(){
-        return evaluationRepository.findAll();
+    public Page<Evaluation> findAll(Pageable pageable){
+        return evaluationRepository.findAll(pageable);
     }
 
     /**
@@ -31,7 +33,7 @@ public class EvaluationService {
      * @param tag
      * @return
      */
-    public List<Evaluation> findEvaluationByTag(String tag){
-        return evaluationRepository.findEvaluationByTag(tag);
+    public Page<Evaluation> findEvaluationByTag(String tag,Pageable pageable){
+        return evaluationRepository.findEvaluationByTag(tag,pageable);
     }
 }

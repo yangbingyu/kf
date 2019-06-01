@@ -3,6 +3,8 @@ package com.example.kf.service;
 import com.example.kf.domain.Orders;
 import com.example.kf.repository.OrdersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +22,8 @@ public class OrdersService {
      * @param customerId
      * @return
      */
-    public List<Orders> findAllByCustomerId(int customerId) {
-        List<Orders> list = ordersRepository.findAllByCustomerId(customerId);
+    public Page<Orders> findAllByCustomerId(int customerId, Pageable pageable) {
+        Page<Orders> list = ordersRepository.findAllByCustomerId(customerId,pageable);
         return list;
     }
 
@@ -39,8 +41,8 @@ public class OrdersService {
      * 查询未被接的订单（全部）
      * @return
      */
-    public List<Orders> findByType(){
-        return ordersRepository.findByType();
+    public Page<Orders> findByType(Pageable pageable){
+        return ordersRepository.findByType(pageable);
     }
 
     /**
@@ -48,8 +50,8 @@ public class OrdersService {
      * @param userId
      * @return
      */
-    public List<Orders> findByTypeAndUserId(int userId){
-        return ordersRepository.findByTypeAndUserId(userId);
+    public Page<Orders> findByTypeAndUserId(int userId,Pageable pageable){
+        return ordersRepository.findByTypeAndUserId(userId,pageable);
     }
 
     /**
@@ -57,8 +59,8 @@ public class OrdersService {
      * @param userId
      * @return
      */
-    public List<Orders> findByTypeAndCustomerId(int userId){
-        return ordersRepository.findByTypeAndCustomerId(userId);
+    public Page<Orders> findByTypeAndCustomerId(int userId,Pageable pageable){
+        return ordersRepository.findByTypeAndCustomerId(userId,pageable);
     }
 
     /**
@@ -83,8 +85,8 @@ public class OrdersService {
      * @param driver
      * @return
      */
-    public List<Orders> findByTypeAndDriver(int driver){
-        return ordersRepository.findByTypeAndDriver(driver);
+    public Page<Orders> findByTypeAndDriver(int driver,Pageable pageable){
+        return ordersRepository.findByTypeAndDriver(driver,pageable);
     }
 
     /**
@@ -92,8 +94,8 @@ public class OrdersService {
      * @param driver
      * @return
      */
-    public List<Orders> findOrdersByDriver(int driver){
-        return ordersRepository.findOrdersByDriver(driver);
+    public Page<Orders> findOrdersByDriver(int driver,Pageable pageable){
+        return ordersRepository.findOrdersByDriver(driver,pageable);
     }
 
     /**
@@ -102,5 +104,13 @@ public class OrdersService {
      */
     public List<Orders> findOrdersByCustomerId(int customerId){
         return ordersRepository.findOrdersByCustomerId(customerId);
+    }
+
+    public List<Orders> findAll() {
+        return ordersRepository.findAll();
+    }
+
+    public List<Orders> findOrdersByUserId(int userId) {
+        return ordersRepository.findOrdersByUserId(userId);
     }
 }

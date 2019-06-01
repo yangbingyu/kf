@@ -38,7 +38,7 @@
                         <dd><a th:href="@{'/openOrders?userId='+${session.userId}}"><i class="fa fa-file-o"></i>&nbsp;&nbsp;未接订单</a></dd>
                     </dl>
                 </li>
-                <li class="layui-nav-item"><a th:href="@{'/toTest?username='+${session.username}}"><i class="layui-icon">&#xe606;</i>&nbsp;&nbsp;联系客服</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/customerChat?username='+${session.username}}"><i class="layui-icon">&#xe606;</i>&nbsp;&nbsp;联系客服</a></li>
                 <li class="layui-nav-item"><a th:href="@{'/customerInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
             </ul>
         </div>
@@ -79,6 +79,13 @@
         })
         .catch(function (error) {
 
+            console.log(error);
+        });
+
+    axios.get('http://localhost:8091/orders/deleteOrders').then(function (response) {
+        console.log(response);
+    })
+        .catch(function (error) {
             console.log(error);
         });
 

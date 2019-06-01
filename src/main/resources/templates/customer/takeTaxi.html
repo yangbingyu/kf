@@ -38,7 +38,7 @@
                         <dd><a th:href="@{'/openOrders?userId='+${session.userId}}"><i class="fa fa-file-o"></i>&nbsp;&nbsp;未接订单</a></dd>
                     </dl>
                 </li>
-                <li class="layui-nav-item"><a th:href="@{'/toTest?username='+${session.username}}"><i class="layui-icon">&#xe606;</i>&nbsp;&nbsp;联系客服</a></li>
+                <li class="layui-nav-item"><a th:href="@{'/customerChat?username='+${session.username}}"><i class="layui-icon">&#xe606;</i>&nbsp;&nbsp;联系客服</a></li>
                 <li class="layui-nav-item"><a th:href="@{'/customerInfo?id='+${session.userId}}"><i class="layui-icon">&#xe716;</i>&nbsp;&nbsp;个人设置</a></li>
             </ul>
         </div>
@@ -93,44 +93,44 @@
     <form class="layui-form" th:action="@{/saveOrders}" method="post">
         <div class="layui-form-item" style="display: none">
             <label class="layui-form-label">客户id</label>
-            <div class="layui-input-block">
-                <input id="customerId" readonly name="customerId" th:value="${session.userId}">
+            <div class="layui-input-inline">
+                <input id="customerId" readonly name="customerId" th:value="${session.userId}" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">起点</label>
-            <div class="layui-input-block">
-                <input id="originConfirm" readonly name="origin">
+            <div class="layui-input-inline">
+                <input id="originConfirm" readonly name="origin" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">终点</label>
-            <div class="layui-input-block">
-                <input id="destinationConfirm" readonly name="destination">
+            <div class="layui-input-inline">
+                <input id="destinationConfirm" readonly name="destination" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">距离(km)</label>
-            <div class="layui-input-block">
-                <input id="distance" readonly name="distance">
+            <div class="layui-input-inline">
+                <input id="distance" readonly name="distance" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">价格(元)</label>
-            <div class="layui-input-block">
-                <input id="price" readonly name="price">
+            <div class="layui-input-inline">
+                <input id="price" readonly name="price" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">预约时间</label>
-            <div class="layui-input-block">
-                <input id="timeConfirm" readonly name="date">
+            <div class="layui-input-inline">
+                <input id="timeConfirm" readonly name="date" class="layui-input">
             </div>
         </div>
         <div class="layui-form-item">
             <div class="layui-input-block">
                 <button class="layui-btn" type="submit" lay-filter="formDemo">确定预约</button>
-                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                <button class="layui-btn layui-btn-primary" onclick="cancel()">取消</button>
             </div>
         </div>
     </form>
@@ -148,12 +148,13 @@
 
     });
 
+    var index = null;
     function openModak(){
         var ori = document.getElementById("origin").value;
         var destination = document.getElementById("destination").value;
         var time = document.getElementById("time").value;
         // console.log(ori,destination);
-        layui.use('layer', function() {
+        index = layui.use('layer', function() {
             var layer = layui.layer;
             var $ =layui.$;
             layer.open({
@@ -193,6 +194,13 @@
             });
 
 
+    }
+
+    function cancel(){
+        layui.use('layer',function () {
+            var layer = layui.layer;
+            layer.close(index);
+        })
     }
 
     layui.use('laydate', function(){

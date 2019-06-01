@@ -22,6 +22,8 @@ import com.example.kf.domain.ContentVo;
 import com.example.kf.domain.Message;
 import com.example.kf.service.MessageService;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -48,6 +50,8 @@ public class ChatSocket {
 
     private static MessageService messageService;
 
+    private static Logger logger = LoggerFactory.getLogger(ChatSocket.class);
+
     @Autowired
     public void setChatService(MessageService messageService) {
         ChatSocket.messageService = messageService;
@@ -57,21 +61,19 @@ public class ChatSocket {
      */
     @OnOpen
     public void open(Session session, @PathParam("username") String username){
+        logger.debug("监听用户登录");
         this.session = session;
-        System.out.println(session.getId());
-        System.out.println(session.getBasicRemote());
         //将当前连接上的用户session信息全部存到scokets中
         sockets.add(this);
         //拿到URL路径后面所有的参数信息
         String queryString = session.getQueryString();
-        System.out.println();
         //截取=后面的参数信息(用户名)，将参数信息赋值给全局的用户名
 //        this.username = queryString.substring(queryString.indexOf("=")+1);
         //每登录一个用户，就将该用户名存入到names数组中,用于刷新好友列表
         names.add(username);
         //将当前登录用户以及对应的session存入到map中
         this.map.put(username, this.session);
-        System.out.println("用户"+username+"进入聊天室");
+        logger.debug("用户"+username+"进入聊天室");
         Message message = new Message();
         message.setAlert("用户"+username+"进入聊天室");
         //将当前所有登录用户存入到message中，用于广播发送到聊天页面
@@ -85,12 +87,13 @@ public class ChatSocket {
      */
     @OnClose
     public void close(Session session,@PathParam("username") String username){
+        logger.debug("监听用户离开");
         //移除退出登录用户的通信管道
         sockets.remove(this);
         //将用户名从names中剔除，用于刷新好友列表
         names.remove(username);
         Message message = new Message();
-        System.out.println("用户"+username+"退出聊天室");
+        logger.debug("用户"+username+"退出聊天室");
         message.setAlert(username+"退出当前聊天室！！！");
         //刷新好友列表
         message.setNames(names);
@@ -106,14 +109,17 @@ public class ChatSocket {
         ContentVo vo = gson.fromJson(msg, ContentVo.class);
         //如果是群聊，就像消息广播给所有人
         if(vo.getType()==1){
+            logger.debug("群聊");
             Message message = new Message();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String dateString = formatter.format(new Date());
             message.setDate(dateString);
             message.setFromUser(username);
             message.setSendMsg(vo.getMsg());
+            logger.debug(message.getFromUser()+"在"+message.getDate()+"说："+message.getSendMsg());
             broadcast(sockets, gson.toJson(message));
         }else{
+            logger.debug("单聊");
             Message message = new Message();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String dateString = formatter.format(new Date());
@@ -125,7 +131,7 @@ public class ChatSocket {
             String to  = vo.getToUser();
             System.out.println(message.toString());
             messageService.save(message);
-
+            logger.debug(message.getFromUser()+"在"+message.getDate()+"私聊"+message.getToUser()+"说："+message.getAlert());
             //根据单聊对象的名称拿到要单聊对象的Session
             Session to_session = this.map.get(to);
             //如果是单聊，就将消息发送给对方

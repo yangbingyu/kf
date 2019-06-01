@@ -196,6 +196,8 @@
                     , height: 300
                     , width: 697
                     , url: 'http://localhost:8091/message/findMessageByFromUser/'+param.name //数据接口
+                    , limit: 10
+                    , limits: [10, 20, 50]
                     , page: true //开启分页
                     , cols: [
                         [

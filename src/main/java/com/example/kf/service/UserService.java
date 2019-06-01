@@ -3,6 +3,8 @@ package com.example.kf.service;
 import com.example.kf.domain.User;
 import com.example.kf.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -31,8 +33,8 @@ public class UserService {
         return user1;
     }
 
-    public List<User> findUser(){
-        List<User> user = userRepository.findUser();
+    public Page<User> findUser(Pageable pageable){
+        Page<User> user = userRepository.findUser(pageable);
         return user;
     }
 
